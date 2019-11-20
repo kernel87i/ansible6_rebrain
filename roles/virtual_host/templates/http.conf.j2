@@ -1,0 +1,19 @@
+server {
+
+  listen 80;
+
+  server_name '{{ domain_name1 }}';
+
+  index  '{{ index1 }}';
+
+  root {{ root_directory }};
+
+    location /.well-known/acme-challenge {
+      allow all;
+    }
+
+    location / {
+      return 301 https://$host$request_uri;
+    }
+}
+

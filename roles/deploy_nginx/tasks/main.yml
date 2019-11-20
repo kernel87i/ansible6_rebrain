@@ -1,0 +1,28 @@
+---
+# tasks file for deploy_nginx
+
+- name: Install Nginx web server
+  yum:
+    name: nginx
+    state: latest
+
+- name: Start Nginx
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Port 80 forwarding virtual host  firewalld
+  firewalld:
+    port: 80/tcp
+    permanent: yes
+    state: enabled
+  notify: Restart firewalld
+
+- name: Port 443 forwarding virtual host  firewalld
+  firewalld:
+    service: https
+    permanent: yes
+    state: enabled
+  notify: Restart firewalld
+

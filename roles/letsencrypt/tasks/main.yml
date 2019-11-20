@@ -1,0 +1,14 @@
+---
+- name: Install letsencrypt
+  yum:
+    name: letsencrypt
+    state: latest
+
+- name: Add letsencrypt cronjob for cert renewal
+  cron:
+    name: letsencrypt_renewal
+    special_time: weekly
+    job: letsencrypt --renew certonly  --webroot -w /usr/share/nginx/html -m {{ certbot_admin_email }} --agree-tos -d {{ domain_name1 }}  && service nginx reload
+
+- name: Add crontab to reload server
+  cron: minute="00" hour="0" weekday="1" month="1" job="/etc/init.d/nginx reload"

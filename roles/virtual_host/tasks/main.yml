@@ -1,0 +1,63 @@
+---
+
+- name: Removing default nginx
+  file:
+    path: /etc/nginx/nginx.conf
+    state: absent
+
+- name: Adding nginx configuration
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: Reload Nginx
+
+- name: Adding  configuration site http
+  template:
+    src: http.conf.j2
+    dest: /etc/nginx/conf.d/http.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: reload nginx
+  service: 
+    name: nginx
+    state: reloaded
+
+- name: Copy file index example  with owner and permissions
+  copy:
+    src: "{{ item }}"
+    dest: "{{ root_directory }}"
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - "index.site1.html"
+  notify: Reload Nginx
+
+- name: Stop and disable firewalld.
+  service:
+    name: firewalld
+    state: stopped
+       
+- name: Generate new certificate if one doesn't exist.
+  shell: letsencrypt certonly  --webroot -w /usr/share/nginx/html -m "{{ certbot_admin_email }}" --agree-tos -d "{{ domain_name1}}";
+  args:
+    creates: /etc/letsencrypt/live/{{ domain_name1 }}
+
+- name: Adding  configuration site ssl
+  template:
+    src: https.conf.j2
+    dest: /etc/nginx/conf.d/https.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: Reload Nginx
+
+- name: Stop and disable firewalld.
+  service:
+    name: firewalld
+    state: started
